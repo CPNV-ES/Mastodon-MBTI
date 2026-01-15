@@ -1,24 +1,39 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+const int TRIG_PIN = 5;  
+const int ECHO_PIN = 4;  
 
-// Define the LED pin
-const int LED_PIN = 2;
+const float VITESSE_SON = 0.034; 
 
 void setup() {
-  // Configure the pin as an output
-  pinMode(LED_PIN, OUTPUT);
+  Serial.begin(115200); 
+  
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  delay(1000);
+  Serial.println("--- Radar ESP32 Démarré ---");
 }
 
 void loop() {
-  digitalWrite(LED_PIN, HIGH);  // Switch on the LED
-  delay(1000);                  // Wait 1 second
-  digitalWrite(LED_PIN, LOW);   // Switch off the LED
-  delay(1000);                  // Wait 1 second
-}
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  long duree = pulseIn(ECHO_PIN, HIGH);
+
+  float distance = (duree * VITESSE_SON) / 2;
+
+  Serial.print("Distance : ");
+  if (distance == 0 || distance > 400) {
+    Serial.println("Hors de portée");
+  } else {
+    Serial.print(distance);
+    Serial.println(" cm");
+  }
+
+  delay(200); 
 }
