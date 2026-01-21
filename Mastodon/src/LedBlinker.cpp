@@ -3,7 +3,7 @@
 LedBlinker::LedBlinker(int led1Pin, int led2Pin, int led3Pin, int led4Pin, int btnPin)
     : led1(led1Pin), led2(led2Pin), led3(led3Pin), led4(led4Pin), buttonPin(btnPin),
       isBlinking(false), lastButtonState(HIGH), buttonPressedTime(0), 
-      isPressing(false), previousMillis(0), ledState(HIGH) {
+      isPressing(false), previousMillis(0), ledState(HIGH), activeBlinker(NONE) {
 }
 
 void LedBlinker::begin() {
@@ -38,18 +38,18 @@ void LedBlinker::handleButton() {
         if (isBlinking && (currentMillis - buttonPressedTime >= longPressDuration)) {
             isBlinking = false;
             isPressing = false;
-            digitalWrite(led1, HIGH); 
+            digitalWrite(led1, HIGH);
             digitalWrite(led2, HIGH);
         }
     }
     
-
     if (reading == HIGH && lastButtonState == LOW) {
         if (!isBlinking && (currentMillis - buttonPressedTime < longPressDuration)) {
+            activeBlinker = BOTH;
             isBlinking = true;
         }
         isPressing = false;
-        delay(50); 
+        delay(50);
     }
     
     lastButtonState = reading;
@@ -62,8 +62,29 @@ void LedBlinker::updateLeds() {
         if (currentMillis - previousMillis >= interval) {
             previousMillis = currentMillis;
             ledState = !ledState;
-            digitalWrite(led1, ledState);
-            digitalWrite(led2, ledState);
+            
+            switch (activeBlinker) {
+                case LEFT:
+                    digitalWrite(led1, ledState);
+                    digitalWrite(led2, HIGH);
+                    break;
+                    
+                case RIGHT:
+                    digitalWrite(led1, HIGH);
+                    digitalWrite(led2, ledState);
+                    break;
+                    
+                case BOTH:
+                    digitalWrite(led1, ledState);
+                    digitalWrite(led2, ledState);
+                    break;
+                    
+                case NONE:
+                default:
+                    digitalWrite(led1, HIGH);
+                    digitalWrite(led2, HIGH);
+                    break;
+            }
         }
     } else {
         digitalWrite(led1, HIGH);
@@ -72,4 +93,24 @@ void LedBlinker::updateLeds() {
     
     digitalWrite(led3, HIGH);
     digitalWrite(led4, HIGH);
+}
+
+void LedBlinker::startLeftBlinker() {
+    activeBlinker = LEFT;
+    isBlinking = true;
+    Serial.println("[BLINKER] Clignotant GAUCHE activé");
+}
+
+void LedBlinker::startRightBlinker() {
+    activeBlinker = RIGHT;
+    isBlinking = true;
+    Serial.println("[BLINKER] Clignotant DROIT activé");
+}
+
+void LedBlinker::stopBlinkers() {
+    activeBlinker = NONE;
+    isBlinking = false;
+    digitalWrite(led1, HIGH);
+    digitalWrite(led2, HIGH);
+    Serial.println("[BLINKER] Clignotants désactivés");
 }

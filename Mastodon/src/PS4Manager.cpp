@@ -1,7 +1,12 @@
 #include "PS4Manager.h"
+#include "LedBlinker.h"
 
 PS4Manager::PS4Manager(int ledPin) 
-    : LED_PIN(ledPin), lastPrint(0), lastBatteryCheck(0) {
+    : LED_PIN(ledPin), lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr) {
+}
+
+void PS4Manager::setLedBlinker(LedBlinker* blinker) {
+    ledBlinker = blinker;
 }
 
 void PS4Manager::begin(const char* macAddress) {
@@ -79,14 +84,20 @@ void PS4Manager::handleButtons() {
     
     // Shoulder buttons
     if (PS4.L1()) {
-        Serial.println("[L1] Gâchette gauche pressée");
+        Serial.println("[L1] Gâchette gauche pressée - Clignotant GAUCHE");
+        if (ledBlinker != nullptr) {
+            ledBlinker->startLeftBlinker();
+        }
         PS4.setRumble(50, 0);
         delay(100);
         PS4.setRumble(0, 0);
     }
     
     if (PS4.R1()) {
-        Serial.println("[R1] Gâchette droite pressée");
+        Serial.println("[R1] Gâchette droite pressée - Clignotant DROIT");
+        if (ledBlinker != nullptr) {
+            ledBlinker->startRightBlinker();
+        }
         PS4.setRumble(0, 100);
         delay(100);
         PS4.setRumble(0, 0);

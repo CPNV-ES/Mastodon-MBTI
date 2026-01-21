@@ -12,24 +12,23 @@ const int BUTTON_PIN = 18;       // Button for blinker control
 
 const char* PS4_MAC_ADDRESS = "E0:8C:FE:2E:96:6A";
 
-
 PS4Manager ps4Controller(LED_PIN);
 LedBlinker ledBlinker(LED1_PIN, LED2_PIN, LED3_PIN, LED4_PIN, BUTTON_PIN);
 
 void setup() {
     Serial.begin(115200);
-    delay(2000);
+    delay(150);
     
-
     ps4Controller.begin(PS4_MAC_ADDRESS);
-
+    
     ledBlinker.begin();
+    
+    ps4Controller.setLedBlinker(&ledBlinker);
     
     Serial.println("[SETUP] Système initialisé avec succès!");
 }
 
 void loop() {
-
     ps4Controller.update();
     
     ledBlinker.update();
