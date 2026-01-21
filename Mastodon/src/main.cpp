@@ -1,24 +1,36 @@
 #include <Arduino.h>
+#include "PS4Manager.h"
+#include "LedBlinker.h"
 
-// put function declarations here:
-int myFunction(int, int);
+const int LED_PIN = 2;           // LED for PS4 controller feedback
+const int LED1_PIN = 23;         // Blinker LED 1
+const int LED2_PIN = 21;         // Blinker LED 2
+const int LED3_PIN = 17;         // Fixed LED 3
+const int LED4_PIN = 16;         // Fixed LED 4
 
-// Define the LED pin
-const int LED_PIN = 2;
+
+const char* PS4_MAC_ADDRESS = "E0:8C:FE:2E:96:6A";
+
+PS4Manager ps4Controller(LED_PIN);
+LedBlinker ledBlinker(LED1_PIN, LED2_PIN, LED3_PIN, LED4_PIN);
 
 void setup() {
-  // Configure the pin as an output
-  pinMode(LED_PIN, OUTPUT);
+    Serial.begin(115200);
+    delay(150);
+    
+    ps4Controller.begin(PS4_MAC_ADDRESS);
+    
+    ledBlinker.begin();
+    
+    ps4Controller.setLedBlinker(&ledBlinker);
+    
+    Serial.println("[SETUP] Système initialisé avec succès!");
 }
 
 void loop() {
-  digitalWrite(LED_PIN, HIGH);  // Switch on the LED
-  delay(1000);                  // Wait 1 second
-  digitalWrite(LED_PIN, LOW);   // Switch off the LED
-  delay(1000);                  // Wait 1 second
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+    ps4Controller.update();
+    
+    ledBlinker.update();
+    
+    delay(10);
 }
