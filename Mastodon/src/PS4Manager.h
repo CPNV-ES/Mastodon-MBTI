@@ -36,5 +36,20 @@ private:
     
     void handleDPad();
 };
+class PS4Manager {
+private:
+    int LED_PIN;
+    int LED_PIN_1;  // Ajoutez cette ligne
+    int LED_PIN_2;  // Ajoutez cette ligne
+    unsigned long lastPrint;
+    unsigned long lastBatteryCheck;
+    LedBlinker* ledBlinker;
+    static const int PRINT_INTERVAL = 1000;
+    static const int BATTERY_CHECK_INTERVAL = 30000;
+
+public:
+    PS4Manager(int ledPin, int ledPin1, int ledPin2);  // Modifiez le constructeur
+    // ... reste du code
+};
 
 #endif
