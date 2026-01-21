@@ -30,7 +30,7 @@ void LedBlinker::handleButton() {
     unsigned long currentMillis = millis();
     
     if (reading == LOW && lastButtonState == HIGH) {
-        buttonPrxessedTime = currentMillis;
+        buttonPressedTime = currentMillis;
         isPressing = true;
     }
     
