@@ -53,9 +53,9 @@ void DirectionController::setDirectionFromJoystick(int joystickX) {
         joystickX = 0;
     }
     
-    // Map joystick range to direction range
-    // -128..127 -> -10..10
-    int direction = map(joystickX, -128, 127, -10, 10);
+    // Map joystick range to direction range (inverted)
+    // -128..127 -> 10..-10 (inverted to match wheel direction)
+    int direction = map(joystickX, -128, 127, 10, -10);
     
     // Only update if direction changed significantly
     if (abs(direction - currentDirection) >= 1) {
