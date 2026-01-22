@@ -1,12 +1,17 @@
 #include "PS4Manager.h"
 #include "LedBlinker.h"
+#include "DirectionController.h"
 
 PS4Manager::PS4Manager(int ledPin) 
-    : LED_PIN(ledPin), lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr) {
+    : LED_PIN(ledPin), lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr), directionController(nullptr) {
 }
 
 void PS4Manager::setLedBlinker(LedBlinker* blinker) {
     ledBlinker = blinker;
+}
+
+void PS4Manager::setDirectionController(DirectionController* controller) {
+    directionController = controller;
 }
 
 void PS4Manager::begin(const char* macAddress) {
@@ -38,6 +43,12 @@ void PS4Manager::update() {
         if (millis() - lastWait > 3000) {
             Serial.println("[ATTENTE] En attente de connexion...");
             lastWait = millis();
+            for(int i = 0; i < 3; i++) {
+            digitalWrite(LED_PIN, HIGH);
+            delay(200);
+            digitalWrite(LED_PIN, LOW);
+            delay(200);
+    }
         }
         return;
     }
@@ -174,12 +185,16 @@ void PS4Manager::handleDPad() {
 }
 
 void PS4Manager::handleJoysticks() {
+    int lx = PS4.LStickX(); // -128 to 127
+    int ly = PS4.LStickY(); // -128 to 127
+    int rx = PS4.RStickX(); // -128 to 127
+    int ry = PS4.RStickY(); // -128 to 127
+    
+    if (directionController != nullptr) {
+        directionController->setDirectionFromJoystick(lx);
+    }
+    
     if (millis() - lastPrint > PRINT_INTERVAL) {
-        int lx = PS4.LStickX(); // -128 to 127
-        int ly = PS4.LStickY(); // -128 to 127
-        int rx = PS4.RStickX(); // -128 to 127
-        int ry = PS4.RStickY(); // -128 to 127
-        
         if (abs(lx) > 20 || abs(ly) > 20) {
             Serial.print("[JOYSTICK L] X: ");
             Serial.print(lx);

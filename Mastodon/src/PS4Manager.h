@@ -5,6 +5,7 @@
 #include <PS4Controller.h>
 
 class LedBlinker;
+class DirectionController;
 
 class PS4Manager {
 private:
@@ -15,6 +16,7 @@ private:
     const unsigned long BATTERY_CHECK_INTERVAL = 10000; // 10 seconds
     
     LedBlinker* ledBlinker;
+    DirectionController* directionController;
     
 public:
     PS4Manager(int ledPin);
@@ -22,6 +24,8 @@ public:
     void begin(const char* macAddress);
     
     void setLedBlinker(LedBlinker* blinker);
+    
+    void setDirectionController(DirectionController* controller);
     
     void update();
     
