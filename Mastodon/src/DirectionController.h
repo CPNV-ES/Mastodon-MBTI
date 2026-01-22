@@ -10,7 +10,7 @@ private:
     const int SERVO_PIN;
     
     static const int SERVO_CENTER_DEG = 90;
-    static const int SERVO_CENTER_OFFSET_DEG = 6;
+    static const int SERVO_CENTER_OFFSET_DEG = 5;
     static const int SERVO_MAX_DEG = 15;
     static const int ATTACH_MIN_US = 500;
     static const int ATTACH_MAX_US = 2500;
