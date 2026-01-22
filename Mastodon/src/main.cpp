@@ -10,7 +10,7 @@ const int LED4_PIN = 16;         // Fixed LED 4
 
 const char* PS4_MAC_ADDRESS = "E0:8C:FE:2E:96:6A";
 
-PS4Manager ps4Manager(LED_PIN, 12, 13);
+PS4Manager ps4Manager(LED_PIN, 16,  17);
 LedBlinker ledBlinker(LED1_PIN, LED2_PIN, LED3_PIN, LED4_PIN);
 
 void setup() {
