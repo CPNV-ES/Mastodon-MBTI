@@ -63,17 +63,7 @@ void PS4Manager::update() {
 }
 
 void PS4Manager::handleButtons() {
-    if (PS4.L2()) {
-        digitalWrite(LED_PIN_1, HIGH);
-        digitalWrite(LED_PIN_2, HIGH);
-        Serial.print("[L2] Pressed - LEDs ON - Value: ");
-        Serial.println(PS4.L2Value());
-    }
-    else {
-        digitalWrite(LED_PIN_1, LOW);
-        digitalWrite(LED_PIN_2, LOW);
-    }
-
+    // Face buttons
     if (PS4.Cross()) {
         digitalWrite(LED_PIN, HIGH);
         Serial.println("[X] Bouton Croix pressé - LED ON");
@@ -105,7 +95,8 @@ void PS4Manager::handleButtons() {
         }
         Serial.println("[□] Carré pressé - Clignotement lent");
     }
-
+    
+    // Shoulder buttons
     if (PS4.L1()) {
         Serial.println("[L1] Gâchette gauche pressée - Clignotant GAUCHE");
         if (ledBlinker != nullptr) {
@@ -125,12 +116,25 @@ void PS4Manager::handleButtons() {
         delay(100);
         PS4.setRumble(0, 0);
     }
-
+    
+    // Triggers
+    if (PS4.L2()) {
+        digitalWrite(LED_PIN_1, HIGH);
+        digitalWrite(LED_PIN_2, HIGH);
+        Serial.print("[L2] Pressed - LEDs ON - Value: ");
+        Serial.println(PS4.L2Value());
+    }
+    else {
+        digitalWrite(LED_PIN_1, LOW);
+        digitalWrite(LED_PIN_2, LOW);
+    }
+    
     if (PS4.R2()) {
         Serial.print("[R2] Trigger droit: ");
         Serial.println(PS4.R2Value());
     }
-
+    
+    // Special buttons
     if (PS4.Share()) {
         Serial.println("[SHARE] Bouton Share pressé");
         delay(200);
@@ -150,7 +154,8 @@ void PS4Manager::handleButtons() {
         Serial.println("[TOUCHPAD] Touchpad pressé");
         delay(200);
     }
-
+    
+    // Joystick buttons
     if (PS4.L3()) {
         Serial.println("[L3] Joystick gauche cliqué");
         delay(200);
@@ -165,25 +170,25 @@ void PS4Manager::handleButtons() {
 void PS4Manager::handleDPad() {
     if (PS4.Up()) {
         Serial.println("[↑] Haut pressé");
-        PS4.setLed(255, 0, 0);
+        PS4.setLed(255, 0, 0); // Red
         delay(100);
     }
 
     if (PS4.Down()) {
         Serial.println("[↓] Bas pressé");
-        PS4.setLed(0, 255, 0);
+        PS4.setLed(0, 255, 0); // Green
         delay(100);
     }
 
     if (PS4.Left()) {
         Serial.println("[←] Gauche pressé");
-        PS4.setLed(0, 0, 255);
+        PS4.setLed(0, 0, 255); // Blue
         delay(100);
     }
 
     if (PS4.Right()) {
         Serial.println("[→] Droite pressé");
-        PS4.setLed(255, 255, 0);
+        PS4.setLed(255, 255, 0); // Yellow
         delay(100);
     }
 }
