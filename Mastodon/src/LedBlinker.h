@@ -7,7 +7,6 @@ class LedBlinker {
 private:
     const int led1;
     const int led2;
-    const int led3;
     const int led4;
     
     bool isBlinking;
@@ -20,7 +19,7 @@ private:
     BlinkerSide activeBlinker;
     
 public:
-    LedBlinker(int led1Pin, int led2Pin, int led3Pin, int led4Pin);
+    LedBlinker(int led1Pin, int led2Pin, int led4Pin);
     
     void begin();
     

@@ -1,9 +1,11 @@
 #include "PS4Manager.h"
 #include "LedBlinker.h"
 #include "DirectionController.h"
+#include "LedController.h"
 
-PS4Manager::PS4Manager(int ledPin) 
-    : LED_PIN(ledPin), lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr), directionController(nullptr) {
+PS4Manager::PS4Manager(int ledPin, int ledPin1, int ledPin2)
+    : LED_PIN(ledPin), LED_PIN_1(ledPin1), LED_PIN_2(ledPin2),
+    lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr), directionController(nullptr) {
 }
 
 void PS4Manager::setLedBlinker(LedBlinker* blinker) {
@@ -14,16 +16,22 @@ void PS4Manager::setDirectionController(DirectionController* controller) {
     directionController = controller;
 }
 
+void PS4Manager::setLedController(LedController* controller) {
+    ledController = controller;
+}
+
 void PS4Manager::begin(const char* macAddress) {
     Serial.println("========================================");
     Serial.println("[INFO] Initialisation PS4Controller...");
     PS4.begin(macAddress);
     Serial.println("[INFO] En attente de connexion...");
     Serial.println("========================================");
-    
+
     pinMode(LED_PIN, OUTPUT);
-    
-    for(int i = 0; i < 3; i++) {
+    pinMode(LED_PIN_1, OUTPUT);
+    pinMode(LED_PIN_2, OUTPUT);
+
+    for (int i = 0; i < 3; i++) {
         digitalWrite(LED_PIN, HIGH);
         delay(200);
         digitalWrite(LED_PIN, LOW);
@@ -38,7 +46,7 @@ bool PS4Manager::isConnected() {
 void PS4Manager::update() {
     if (!PS4.isConnected()) {
         digitalWrite(LED_PIN, LOW);
-        
+
         static unsigned long lastWait = 0;
         if (millis() - lastWait > 3000) {
             Serial.println("[ATTENTE] En attente de connexion...");
@@ -52,7 +60,7 @@ void PS4Manager::update() {
         }
         return;
     }
-    
+
     handleButtons();
     handleDPad();
     handleJoysticks();
@@ -66,15 +74,15 @@ void PS4Manager::handleButtons() {
         Serial.println("[X] Bouton Croix pressé - LED ON");
         delay(100);
     }
-    
+
     if (PS4.Circle()) {
         digitalWrite(LED_PIN, LOW);
         Serial.println("[O] Bouton Cercle pressé - LED OFF");
         delay(100);
     }
-    
+
     if (PS4.Triangle()) {
-        for(int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
             digitalWrite(LED_PIN, HIGH);
             delay(50);
             digitalWrite(LED_PIN, LOW);
@@ -82,9 +90,9 @@ void PS4Manager::handleButtons() {
         }
         Serial.println("[△] Triangle pressé - Clignotement rapide");
     }
-    
+
     if (PS4.Square()) {
-        for(int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             digitalWrite(LED_PIN, HIGH);
             delay(200);
             digitalWrite(LED_PIN, LOW);
@@ -103,7 +111,7 @@ void PS4Manager::handleButtons() {
         delay(100);
         PS4.setRumble(0, 0);
     }
-    
+
     if (PS4.R1()) {
         Serial.println("[R1] Gâchette droite pressée - Clignotant DROIT");
         if (ledBlinker != nullptr) {
@@ -118,6 +126,14 @@ void PS4Manager::handleButtons() {
     if (PS4.L2()) {
         Serial.print("[L2] Trigger gauche: ");
         Serial.println(PS4.L2Value());
+        if (ledController != nullptr) {
+            ledController->startBrakeLights();
+        }
+    }
+    else {
+         if (ledController != nullptr) {
+            ledController->stopBrakeLights();
+        }
     }
     
     if (PS4.R2()) {
@@ -130,17 +146,17 @@ void PS4Manager::handleButtons() {
         Serial.println("[SHARE] Bouton Share pressé");
         delay(200);
     }
-    
+
     if (PS4.Options()) {
         Serial.println("[OPTIONS] Bouton Options pressé");
         delay(200);
     }
-    
+
     if (PS4.PSButton()) {
         Serial.println("[PS] Bouton PS pressé");
         delay(200);
     }
-    
+
     if (PS4.Touchpad()) {
         Serial.println("[TOUCHPAD] Touchpad pressé");
         delay(200);
@@ -151,7 +167,7 @@ void PS4Manager::handleButtons() {
         Serial.println("[L3] Joystick gauche cliqué");
         delay(200);
     }
-    
+
     if (PS4.R3()) {
         Serial.println("[R3] Joystick droit cliqué");
         delay(200);
@@ -164,19 +180,19 @@ void PS4Manager::handleDPad() {
         PS4.setLed(255, 0, 0); // Red
         delay(100);
     }
-    
+
     if (PS4.Down()) {
         Serial.println("[↓] Bas pressé");
         PS4.setLed(0, 255, 0); // Green
         delay(100);
     }
-    
+
     if (PS4.Left()) {
         Serial.println("[←] Gauche pressé");
         PS4.setLed(0, 0, 255); // Blue
         delay(100);
     }
-    
+
     if (PS4.Right()) {
         Serial.println("[→] Droite pressé");
         PS4.setLed(255, 255, 0); // Yellow
@@ -201,14 +217,14 @@ void PS4Manager::handleJoysticks() {
             Serial.print(" Y: ");
             Serial.println(ly);
         }
-        
+
         if (abs(rx) > 20 || abs(ry) > 20) {
             Serial.print("[JOYSTICK R] X: ");
             Serial.print(rx);
             Serial.print(" Y: ");
             Serial.println(ry);
         }
-        
+
         lastPrint = millis();
     }
 }
