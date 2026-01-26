@@ -1,6 +1,7 @@
 #include "PS4Manager.h"
 #include "LedBlinker.h"
 #include "DirectionController.h"
+#include "LedController.h"
 
 PS4Manager::PS4Manager(int ledPin, int ledPin1, int ledPin2)
     : LED_PIN(ledPin), LED_PIN_1(ledPin1), LED_PIN_2(ledPin2),
@@ -13,6 +14,10 @@ void PS4Manager::setLedBlinker(LedBlinker* blinker) {
 
 void PS4Manager::setDirectionController(DirectionController* controller) {
     directionController = controller;
+}
+
+void PS4Manager::setLedController(LedController* controller) {
+    ledController = controller;
 }
 
 void PS4Manager::begin(const char* macAddress) {
@@ -119,14 +124,16 @@ void PS4Manager::handleButtons() {
     
     // Triggers
     if (PS4.L2()) {
-        digitalWrite(LED_PIN_1, HIGH);
-        digitalWrite(LED_PIN_2, HIGH);
-        Serial.print("[L2] Pressed - LEDs ON - Value: ");
+        Serial.print("[L2] Trigger gauche: ");
         Serial.println(PS4.L2Value());
+        if (ledController != nullptr) {
+            ledController->startBrakeLights();
+        }
     }
     else {
-        digitalWrite(LED_PIN_1, LOW);
-        digitalWrite(LED_PIN_2, LOW);
+         if (ledController != nullptr) {
+            ledController->stopBrakeLights();
+        }
     }
     
     if (PS4.R2()) {

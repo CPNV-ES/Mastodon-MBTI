@@ -6,6 +6,7 @@
 
 class LedBlinker;
 class DirectionController;
+class LedController;
 
 class PS4Manager {
 private:
@@ -19,6 +20,7 @@ private:
 
     LedBlinker* ledBlinker;
     DirectionController* directionController;
+    LedController* ledController;
     
 public:
     PS4Manager(int ledPin, int ledPin1, int ledPin2);
@@ -28,6 +30,8 @@ public:
     void setLedBlinker(LedBlinker* blinker);
     
     void setDirectionController(DirectionController* controller);
+
+    void setLedController(LedController* Controller);
     
     void update();
 
