@@ -14,13 +14,17 @@ private:
     const int LED_PIN_1;
     const int LED_PIN_2;
     unsigned long lastPrint;
-    const int PRINT_INTERVAL = 100; // ms
+    const int PRINT_INTERVAL = 100;
     unsigned long lastBatteryCheck;
-    const unsigned long BATTERY_CHECK_INTERVAL = 10000; // 10 seconds
+    const unsigned long BATTERY_CHECK_INTERVAL = 10000;
 
     LedBlinker* ledBlinker;
     DirectionController* directionController;
     LedController* ledController;
+    
+    bool lastL1State;
+    bool lastR1State;
+    bool lastTriangleState;
     
 public:
     PS4Manager(int ledPin, int ledPin1, int ledPin2);

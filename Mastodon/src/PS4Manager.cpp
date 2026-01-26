@@ -5,7 +5,8 @@
 
 PS4Manager::PS4Manager(int ledPin, int ledPin1, int ledPin2)
     : LED_PIN(ledPin), LED_PIN_1(ledPin1), LED_PIN_2(ledPin2),
-    lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr), directionController(nullptr) {
+    lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr), directionController(nullptr), ledController(nullptr),
+    lastL1State(false), lastR1State(false), lastTriangleState(false) {
 }
 
 void PS4Manager::setLedBlinker(LedBlinker* blinker) {
@@ -81,15 +82,13 @@ void PS4Manager::handleButtons() {
         delay(100);
     }
 
-    if (PS4.Triangle()) {
-        for (int i = 0; i < 5; i++) {
-            digitalWrite(LED_PIN, HIGH);
-            delay(50);
-            digitalWrite(LED_PIN, LOW);
-            delay(50);
+    bool currentTriangleState = PS4.Triangle();
+    if (currentTriangleState && !lastTriangleState) {
+        if (ledBlinker != nullptr) {
+            ledBlinker->toggleWarningLights();
         }
-        Serial.println("[△] Triangle pressé - Clignotement rapide");
     }
+    lastTriangleState = currentTriangleState;
 
     if (PS4.Square()) {
         for (int i = 0; i < 3; i++) {
@@ -98,29 +97,33 @@ void PS4Manager::handleButtons() {
             digitalWrite(LED_PIN, LOW);
             delay(200);
         }
-        Serial.println("[□] Carré pressé - Clignotement lent");
+        Serial.println("[□] Bouton Carré pressé - Clignotement lent");
     }
     
     // Shoulder buttons
-    if (PS4.L1()) {
+    bool currentL1State = PS4.L1();
+    if (currentL1State && !lastL1State) {
         Serial.println("[L1] Gâchette gauche pressée - Clignotant GAUCHE");
         if (ledBlinker != nullptr) {
-            ledBlinker->startLeftBlinker();
+            ledBlinker->toggleLeftBlinker();
         }
         PS4.setRumble(50, 0);
         delay(100);
         PS4.setRumble(0, 0);
     }
+    lastL1State = currentL1State;
 
-    if (PS4.R1()) {
+    bool currentR1State = PS4.R1();
+    if (currentR1State && !lastR1State) {
         Serial.println("[R1] Gâchette droite pressée - Clignotant DROIT");
         if (ledBlinker != nullptr) {
-            ledBlinker->startRightBlinker();
+            ledBlinker->toggleRightBlinker();
         }
         PS4.setRumble(0, 100);
         delay(100);
         PS4.setRumble(0, 0);
     }
+    lastR1State = currentR1State;
     
     // Triggers
     if (PS4.L2()) {

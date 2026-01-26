@@ -5,9 +5,8 @@
 
 class LedBlinker {
 private:
-    const int led1;
-    const int led2;
-    const int led4;
+    const int leftBlinkerPin;
+    const int rightBlinkerPin;
     
     bool isBlinking;
     
@@ -19,7 +18,7 @@ private:
     BlinkerSide activeBlinker;
     
 public:
-    LedBlinker(int led1Pin, int led2Pin, int led4Pin);
+    LedBlinker(int leftPin, int rightPin);
     
     void begin();
     
@@ -27,8 +26,9 @@ public:
     
     bool getBlinkState() const { return isBlinking; }
     
-    void startLeftBlinker();
-    void startRightBlinker();
+    void toggleLeftBlinker();
+    void toggleRightBlinker();
+    void toggleWarningLights();
     void stopBlinkers();
     
 private:

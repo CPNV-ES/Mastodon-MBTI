@@ -5,11 +5,12 @@
 
 class LedController {
 private:
-    int led3;
+    int brakeLightPin;
+    int fixedLedPin;
     bool isBrakeOn;
 
 public:
-    LedController(int led3pin);
+    LedController(int brakePin, int fixedPin);
     void begin();
     void startBrakeLights();
     void stopBrakeLights();

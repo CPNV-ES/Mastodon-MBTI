@@ -4,19 +4,19 @@
 #include "DirectionController.h"
 #include "LedController.h"
 
-const int LED_PIN = 2;           // LED for PS4 controller feedback
-const int LED1_PIN = 23;         // Blinker LED 1
-const int LED2_PIN = 21;         // Blinker LED 2
-const int LED3_PIN = 17;         // Braking LED
-const int LED4_PIN = 16;         // Fixed LED 4
+const int PS4_FEEDBACK_LED_PIN = 2;
+const int LEFT_BLINKER_PIN = 23;
+const int RIGHT_BLINKER_PIN = 21;
+const int BRAKE_LIGHT_PIN = 17;
+const int FIXED_LED_PIN = 16;
 const int SERVO_PIN = 18;
 
 const char* PS4_MAC_ADDRESS = "E0:8C:FE:2E:96:6A";
 
-PS4Manager ps4Manager(LED_PIN, 16,  17);
-LedBlinker ledBlinker(LED1_PIN, LED2_PIN, LED4_PIN);
+PS4Manager ps4Manager(PS4_FEEDBACK_LED_PIN, 16, 17);
+LedBlinker ledBlinker(LEFT_BLINKER_PIN, RIGHT_BLINKER_PIN);
 DirectionController directionController(SERVO_PIN);
-LedController ledController(LED3_PIN);
+LedController ledController(BRAKE_LIGHT_PIN, FIXED_LED_PIN);
 
 void setup() {
     Serial.begin(115200);
@@ -36,10 +36,8 @@ void setup() {
 }
 
 void loop() {
-
     ps4Manager.update();
-
     ledBlinker.update();
-
+    
     delay(10);
 }
