@@ -1,16 +1,20 @@
 #include "LedBlinker.h"
 
-LedBlinker::LedBlinker(int leftPin, int rightPin)
-    : leftBlinkerPin(leftPin), rightBlinkerPin(rightPin),
+LedBlinker::LedBlinker(int leftPin, int rightPin, int leftPin2, int rightPin2)
+    : leftBlinkerPin(leftPin), rightBlinkerPin(rightPin), leftBlinkerPin2(leftPin2), rightBlinkerPin2(rightPin2),
       isBlinking(false), previousMillis(0), ledState(LOW), activeBlinker(NONE) {
 }
 
 void LedBlinker::begin() {
     pinMode(leftBlinkerPin, OUTPUT);
     pinMode(rightBlinkerPin, OUTPUT);
+    pinMode(leftBlinkerPin2, OUTPUT);
+    pinMode(rightBlinkerPin2, OUTPUT);
     
     digitalWrite(leftBlinkerPin, LOW);
     digitalWrite(rightBlinkerPin, LOW);
+    digitalWrite(leftBlinkerPin2, LOW);
+    digitalWrite(rightBlinkerPin2, LOW);
 }
 
 void LedBlinker::update() {
@@ -28,29 +32,39 @@ void LedBlinker::updateLeds() {
             switch (activeBlinker) {
                 case LEFT:
                     digitalWrite(leftBlinkerPin, ledState);
+                    digitalWrite(leftBlinkerPin2, ledState);
                     digitalWrite(rightBlinkerPin, LOW);
+                    digitalWrite(rightBlinkerPin2, LOW);
                     break;
                     
                 case RIGHT:
                     digitalWrite(leftBlinkerPin, LOW);
+                    digitalWrite(leftBlinkerPin2, LOW);
                     digitalWrite(rightBlinkerPin, ledState);
+                    digitalWrite(rightBlinkerPin2, ledState);
                     break;
                     
                 case BOTH:
                     digitalWrite(leftBlinkerPin, ledState);
+                    digitalWrite(leftBlinkerPin2, ledState);
                     digitalWrite(rightBlinkerPin, ledState);
+                    digitalWrite(rightBlinkerPin2, ledState);
                     break;
                     
                 case NONE:
                 default:
                     digitalWrite(leftBlinkerPin, LOW);
+                    digitalWrite(leftBlinkerPin2, LOW);
                     digitalWrite(rightBlinkerPin, LOW);
+                    digitalWrite(rightBlinkerPin2, LOW);
                     break;
             }
         }
     } else {
         digitalWrite(leftBlinkerPin, LOW);
+        digitalWrite(leftBlinkerPin2, LOW);
         digitalWrite(rightBlinkerPin, LOW);
+        digitalWrite(rightBlinkerPin2, LOW);
     }
 }
 
@@ -91,6 +105,8 @@ void LedBlinker::stopBlinkers() {
     activeBlinker = NONE;
     isBlinking = false;
     digitalWrite(leftBlinkerPin, LOW);
+    digitalWrite(leftBlinkerPin2, LOW);
     digitalWrite(rightBlinkerPin, LOW);
+    digitalWrite(rightBlinkerPin2, LOW);
     Serial.println("[BLINKER] Clignotants désactivés");
 }

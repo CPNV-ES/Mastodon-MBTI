@@ -7,6 +7,8 @@
 const int PS4_FEEDBACK_LED_PIN = 2;
 const int LEFT_BLINKER_PIN = 23;
 const int RIGHT_BLINKER_PIN = 21;
+const int LEFT_BLINKER_PIN_2 = 19;
+const int RIGHT_BLINKER_PIN_2 = 22;
 const int BRAKE_LIGHT_PIN = 17;
 const int FIXED_LED_PIN = 16;
 const int SERVO_PIN = 18;
@@ -14,7 +16,7 @@ const int SERVO_PIN = 18;
 const char* PS4_MAC_ADDRESS = "E0:8C:FE:2E:96:6A";
 
 PS4Manager ps4Manager(PS4_FEEDBACK_LED_PIN, 16, 17);
-LedBlinker ledBlinker(LEFT_BLINKER_PIN, RIGHT_BLINKER_PIN);
+LedBlinker ledBlinker(LEFT_BLINKER_PIN, RIGHT_BLINKER_PIN, LEFT_BLINKER_PIN_2, RIGHT_BLINKER_PIN_2);
 DirectionController directionController(SERVO_PIN);
 LedController ledController(BRAKE_LIGHT_PIN, FIXED_LED_PIN);
 

@@ -14,9 +14,9 @@ private:
     const int LED_PIN_1;
     const int LED_PIN_2;
     unsigned long lastPrint;
-    const int PRINT_INTERVAL = 100;
+    const int PRINT_INTERVAL = 100; // ms
     unsigned long lastBatteryCheck;
-    const unsigned long BATTERY_CHECK_INTERVAL = 10000;
+    const unsigned long BATTERY_CHECK_INTERVAL = 10000; // 10 seconds
 
     LedBlinker* ledBlinker;
     DirectionController* directionController;
