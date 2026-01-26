@@ -1,89 +1,45 @@
 #include <Arduino.h>
+#include "PS4Manager.h"
+#include "LedBlinker.h"
+#include "DirectionController.h"
+#include "LedController.h"
 
+const int LED_PIN = 2;           // LED for PS4 controller feedback
+const int LED1_PIN = 23;         // Blinker LED 1
+const int LED2_PIN = 21;         // Blinker LED 2
+const int LED3_PIN = 17;         // Braking LED
+const int LED4_PIN = 16;         // Fixed LED 4
+const int SERVO_PIN = 18;
 
-const int led1 = 23; 
-const int led2 = 21; 
-const int led3 = 17; 
-const int led4 = 16; 
-const int buttonPin = 18;
+const char* PS4_MAC_ADDRESS = "E0:8C:FE:2E:96:6A";
 
-
-bool isBlinking = false;    
-int lastButtonState = HIGH; 
-
-
-unsigned long buttonPressedTime = 0;
-const long longPressDuration = 2000; 
-bool isPressing = false;
-
-
-unsigned long previousMillis = 0;
-const long interval = 300; 
-bool ledState = HIGH;
+PS4Manager ps4Manager(LED_PIN, 16,  17);
+LedBlinker ledBlinker(LED1_PIN, LED2_PIN, LED4_PIN);
+DirectionController directionController(SERVO_PIN);
+LedController ledController(LED3_PIN);
 
 void setup() {
-  pinMode(led1, OUTPUT);
-  pinMode(led2, OUTPUT);
-  pinMode(led3, OUTPUT);
-  pinMode(led4, OUTPUT);
-  
-  
-  pinMode(buttonPin, INPUT_PULLUP);
+    Serial.begin(115200);
+    delay(150);
 
-  digitalWrite(led1, HIGH);
-  digitalWrite(led2, HIGH);
-  digitalWrite(led3, HIGH);
-  digitalWrite(led4, HIGH);
+    ps4Manager.begin(PS4_MAC_ADDRESS);
+
+    directionController.begin();
+    ledController.begin();
+    ledBlinker.begin();
+
+    ps4Manager.setDirectionController(&directionController);
+    ps4Manager.setLedBlinker(&ledBlinker);
+    ps4Manager.setLedController(&ledController);
+
+    Serial.println("[SETUP] Système initialisé avec succès!");
 }
 
 void loop() {
-  int reading = digitalRead(buttonPin);
-  unsigned long currentMillis = millis();
 
-  // 1. GESTION DU BOUTON
-  if (reading == LOW && lastButtonState == HIGH) {
-    // On vient d'appuyer
-    buttonPressedTime = currentMillis;
-    isPressing = true;
-  }
+    ps4Manager.update();
 
-  if (isPressing && reading == LOW) {
-    // Si on maintient l'appui plus de 2 secondes : ON ARRÊTE
-    if (isBlinking && (currentMillis - buttonPressedTime >= longPressDuration)) {
-      isBlinking = false;
-      isPressing = false; 
-      digitalWrite(led1, HIGH); // On les remet fixes
-      digitalWrite(led2, HIGH);
-    }
-  }
+    ledBlinker.update();
 
-  if (reading == HIGH && lastButtonState == LOW) {
-    // On vient de relâcher le bouton
-    // Si c'était un appui court : ON ACTIVE
-    if (!isBlinking && (currentMillis - buttonPressedTime < longPressDuration)) {
-      isBlinking = true;
-    }
-    isPressing = false;
-    delay(50); // Anti-rebond
-  }
-  lastButtonState = reading;
-
-  // 2. GESTION DU CLIGNOTEMENT (LED 1 et 2)
-  if (isBlinking) {
-    if (currentMillis - previousMillis >= interval) {
-      previousMillis = currentMillis;
-      ledState = !ledState;
-      digitalWrite(led1, ledState);
-      digitalWrite(led2, ledState);
-    }
-  } else {
-    // Si on ne clignote pas, elles doivent être allumées
-    digitalWrite(led1, HIGH);
-    digitalWrite(led2, HIGH);
-  }
-
-  // 3. LEDS FIXES (LED 3 et 4)
-  // Elles restent allumées quoi qu'il arrive
-  digitalWrite(led3, HIGH);
-  digitalWrite(led4, HIGH);
+    delay(10);
 }
