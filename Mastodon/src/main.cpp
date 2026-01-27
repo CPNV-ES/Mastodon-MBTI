@@ -12,13 +12,17 @@ const int RIGHT_BLINKER_PIN_2 = 22;
 const int BRAKE_LIGHT_PIN = 17;
 const int FIXED_LED_PIN = 16;
 const int SERVO_PIN = 18;
+const int RGB1_RED_PIN = 25;
+const int RGB1_GREEN_PIN = 26;
+const int RGB1_BLUE_PIN = 27;
 
 const char* PS4_MAC_ADDRESS = "E0:8C:FE:2E:96:6A";
 
 PS4Manager ps4Manager(PS4_FEEDBACK_LED_PIN, 16, 17);
 LedBlinker ledBlinker(LEFT_BLINKER_PIN, RIGHT_BLINKER_PIN, LEFT_BLINKER_PIN_2, RIGHT_BLINKER_PIN_2);
 DirectionController directionController(SERVO_PIN);
-LedController ledController(BRAKE_LIGHT_PIN, FIXED_LED_PIN);
+LedController ledController(BRAKE_LIGHT_PIN, FIXED_LED_PIN, 
+                            RGB1_RED_PIN, RGB1_GREEN_PIN, RGB1_BLUE_PIN);
 
 void setup() {
     Serial.begin(115200);
