@@ -5,6 +5,7 @@
 #include "LedController.h"
 #include "UltrasonicController.h"
 #include "MotorController.h"
+#include "AutoModeController.h"
 
 const int PS4_FEEDBACK_LED_PIN = 2;
 const int LEFT_BLINKER_PIN = 23;
@@ -32,6 +33,7 @@ LedController ledController(BRAKE_LIGHT_PIN, FIXED_LED_PIN,
                             RGB1_RED_PIN, RGB1_GREEN_PIN, RGB1_BLUE_PIN);
 UltrasonicController ultrasonicController(ULTRASONIC_TRIG_PIN, ULTRASONIC_ECHO_PIN);
 MotorController motorController(MOTOR_PIN1, MOTOR_PIN2, MOTOR_ENABLE_PIN);
+AutoModeController autoModeController(&motorController, &directionController, &ultrasonicController);
 
 void setup() {
     Serial.begin(115200);
@@ -44,11 +46,13 @@ void setup() {
     ledBlinker.begin();
     ultrasonicController.begin();
     motorController.begin();
+    autoModeController.begin();
 
     ps4Manager.setDirectionController(&directionController);
     ps4Manager.setLedBlinker(&ledBlinker);
     ps4Manager.setLedController(&ledController);
     ps4Manager.setMotorController(&motorController);
+    ps4Manager.setAutoModeController(&autoModeController);
 
     Serial.println("[SETUP] Système initialisé avec succès!");
 }
@@ -56,8 +60,9 @@ void setup() {
 void loop() {
     ps4Manager.update();
     ledBlinker.update();
+    autoModeController.update();
     
-    if (ultrasonicController.isObstacleDetected(20.0)) {
+    if (!autoModeController.isActive() && ultrasonicController.isObstacleDetected(20.0)) {
         motorController.emergencyStop();
         ledController.startBrakeLights();
     }

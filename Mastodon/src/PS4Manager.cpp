@@ -3,11 +3,12 @@
 #include "DirectionController.h"
 #include "LedController.h"
 #include "MotorController.h"
+#include "AutoModeController.h"
 
 PS4Manager::PS4Manager(int ledPin, int ledPin1, int ledPin2)
     : LED_PIN(ledPin), LED_PIN_1(ledPin1), LED_PIN_2(ledPin2),
-    lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr), directionController(nullptr), ledController(nullptr), motorController(nullptr),
-    lastL1State(false), lastR1State(false), lastTriangleState(false) {
+    lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr), directionController(nullptr), ledController(nullptr), motorController(nullptr), autoModeController(nullptr),
+    lastL1State(false), lastR1State(false), lastTriangleState(false), lastOptionsState(false) {
 }
 
 void PS4Manager::setLedBlinker(LedBlinker* blinker) {
@@ -24,6 +25,10 @@ void PS4Manager::setLedController(LedController* controller) {
 
 void PS4Manager::setMotorController(MotorController* controller) {
     motorController = controller;
+}
+
+void PS4Manager::setAutoModeController(AutoModeController* controller) {
+    autoModeController = controller;
 }
 
 void PS4Manager::begin(const char* macAddress) {
@@ -74,6 +79,8 @@ void PS4Manager::update() {
 }
 
 void PS4Manager::handleButtons() {
+    bool isAutoActive = (autoModeController != nullptr && autoModeController->isActive());
+    
     // Face buttons
     if (PS4.Cross()) {
         digitalWrite(LED_PIN, HIGH);
@@ -130,45 +137,46 @@ void PS4Manager::handleButtons() {
     }
     lastR1State = currentR1State;
     
-    // Triggers
-    if (PS4.L2()) {
-        int l2Value = PS4.L2Value(); // 0-255
-        Serial.print("[L2] Trigger gauche: ");
-        Serial.println(l2Value);
-        
-        if (motorController != nullptr && motorController->isStoppedState()) {
-            int reverseSpeed = -l2Value;
-            motorController->setSpeed(reverseSpeed);
-            Serial.println("[MOTOR] Marche arrière");
+    if (!isAutoActive) {
+        if (PS4.L2()) {
+            int l2Value = PS4.L2Value(); // 0-255
+            Serial.print("[L2] Trigger gauche: ");
+            Serial.println(l2Value);
+            
+            if (motorController != nullptr && motorController->isStoppedState()) {
+                int reverseSpeed = -l2Value; 
+                motorController->setSpeed(reverseSpeed);
+                Serial.println("[MOTOR] Marche arrière");
+            }
+            else {
+                if (ledController != nullptr) {
+                    ledController->startBrakeLights();
+                }
+                
+                if (motorController != nullptr && l2Value > 50) {
+                    motorController->brake();
+                }
+            }
         }
         else {
-            if (ledController != nullptr) {
-                ledController->startBrakeLights();
-            }
-            
-            if (motorController != nullptr && l2Value > 50) {
-                motorController->brake();
+             if (ledController != nullptr) {
+                ledController->stopBrakeLights();
             }
         }
-    }
-    else {
-         if (ledController != nullptr) {
-            ledController->stopBrakeLights();
-        }
-    }
-    
-    if (PS4.R2()) {
-        int throttleValue = PS4.R2Value(); // 0-255
-        Serial.print("[R2] Trigger droit: ");
-        Serial.println(throttleValue);
         
-        if (motorController != nullptr) {
-            motorController->setSpeed(throttleValue);
+        if (PS4.R2()) {
+            int throttleValue = PS4.R2Value(); // 0-255
+            Serial.print("[R2] Trigger droit: ");
+            Serial.println(throttleValue);
+            
+            if (motorController != nullptr) {
+                motorController->setSpeed(throttleValue);
+            }
         }
-    }
-    else {
-        if (motorController != nullptr && !PS4.L2()) {
-            motorController->setSpeed(0);
+        else {
+            if (motorController != nullptr && !PS4.L2()) {
+                motorController->setSpeed(0);
+            }
         }
     }
     
@@ -178,10 +186,14 @@ void PS4Manager::handleButtons() {
         delay(200);
     }
 
-    if (PS4.Options()) {
-        Serial.println("[OPTIONS] Bouton Options pressé");
-        delay(200);
+    bool currentOptionsState = PS4.Options();
+    if (currentOptionsState && !lastOptionsState) {
+        Serial.println("[OPTIONS] Toggle Mode AUTO");
+        if (autoModeController != nullptr) {
+            autoModeController->toggle();
+        }
     }
+    lastOptionsState = currentOptionsState;
 
     if (PS4.PSButton()) {
         Serial.println("[PS] Bouton PS pressé");

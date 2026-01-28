@@ -8,6 +8,7 @@ class LedBlinker;
 class DirectionController;
 class LedController;
 class MotorController;
+class AutoModeController;
 
 class PS4Manager {
 private:
@@ -23,10 +24,12 @@ private:
     DirectionController* directionController;
     LedController* ledController;
     MotorController* motorController;
+    AutoModeController* autoModeController;
     
     bool lastL1State;
     bool lastR1State;
     bool lastTriangleState;
+    bool lastOptionsState;
     
 public:
     PS4Manager(int ledPin, int ledPin1, int ledPin2);
@@ -40,6 +43,8 @@ public:
     void setLedController(LedController* Controller);
     
     void setMotorController(MotorController* controller);
+    
+    void setAutoModeController(AutoModeController* controller);
     
     void update();
 
