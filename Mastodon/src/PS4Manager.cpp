@@ -2,10 +2,11 @@
 #include "LedBlinker.h"
 #include "DirectionController.h"
 #include "LedController.h"
+#include "MotorController.h"
 
 PS4Manager::PS4Manager(int ledPin, int ledPin1, int ledPin2)
     : LED_PIN(ledPin), LED_PIN_1(ledPin1), LED_PIN_2(ledPin2),
-    lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr), directionController(nullptr), ledController(nullptr),
+    lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr), directionController(nullptr), ledController(nullptr), motorController(nullptr),
     lastL1State(false), lastR1State(false), lastTriangleState(false) {
 }
 
@@ -19,6 +20,10 @@ void PS4Manager::setDirectionController(DirectionController* controller) {
 
 void PS4Manager::setLedController(LedController* controller) {
     ledController = controller;
+}
+
+void PS4Manager::setMotorController(MotorController* controller) {
+    motorController = controller;
 }
 
 void PS4Manager::begin(const char* macAddress) {
@@ -127,10 +132,23 @@ void PS4Manager::handleButtons() {
     
     // Triggers
     if (PS4.L2()) {
+        int l2Value = PS4.L2Value(); // 0-255
         Serial.print("[L2] Trigger gauche: ");
-        Serial.println(PS4.L2Value());
-        if (ledController != nullptr) {
-            ledController->startBrakeLights();
+        Serial.println(l2Value);
+        
+        if (motorController != nullptr && motorController->isStoppedState()) {
+            int reverseSpeed = -l2Value;
+            motorController->setSpeed(reverseSpeed);
+            Serial.println("[MOTOR] Marche arrière");
+        }
+        else {
+            if (ledController != nullptr) {
+                ledController->startBrakeLights();
+            }
+            
+            if (motorController != nullptr && l2Value > 50) {
+                motorController->brake();
+            }
         }
     }
     else {
@@ -140,8 +158,18 @@ void PS4Manager::handleButtons() {
     }
     
     if (PS4.R2()) {
+        int throttleValue = PS4.R2Value(); // 0-255
         Serial.print("[R2] Trigger droit: ");
-        Serial.println(PS4.R2Value());
+        Serial.println(throttleValue);
+        
+        if (motorController != nullptr) {
+            motorController->setSpeed(throttleValue);
+        }
+    }
+    else {
+        if (motorController != nullptr && !PS4.L2()) {
+            motorController->setSpeed(0);
+        }
     }
     
     // Special buttons

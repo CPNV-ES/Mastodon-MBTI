@@ -48,6 +48,7 @@ void setup() {
     ps4Manager.setDirectionController(&directionController);
     ps4Manager.setLedBlinker(&ledBlinker);
     ps4Manager.setLedController(&ledController);
+    ps4Manager.setMotorController(&motorController);
 
     Serial.println("[SETUP] Système initialisé avec succès!");
 }
