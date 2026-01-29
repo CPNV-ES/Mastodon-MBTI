@@ -20,9 +20,9 @@ private:
     
     const float OBSTACLE_THRESHOLD = 20.0; // cm
     const int FORWARD_SPEED = 150;
-    const int REVERSE_SPEED = -120;
-    const unsigned long REVERSE_DURATION = 1000; // ms
-    const unsigned long TURN_DURATION = 500; // ms
+    const int REVERSE_SPEED = -150;
+    const unsigned long REVERSE_DURATION = 5000; // ms
+    const unsigned long TURN_DURATION = 5000; // ms
     
 public:
     AutoModeController(MotorController* motor, DirectionController* direction, UltrasonicController* ultrasonic);

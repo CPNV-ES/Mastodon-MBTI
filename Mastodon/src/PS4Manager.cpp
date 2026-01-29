@@ -8,7 +8,7 @@
 PS4Manager::PS4Manager(int ledPin, int ledPin1, int ledPin2)
     : LED_PIN(ledPin), LED_PIN_1(ledPin1), LED_PIN_2(ledPin2),
     lastPrint(0), lastBatteryCheck(0), ledBlinker(nullptr), directionController(nullptr), ledController(nullptr), motorController(nullptr), autoModeController(nullptr),
-    lastL1State(false), lastR1State(false), lastTriangleState(false), lastOptionsState(false) {
+    obstacleDetected(false), lastL1State(false), lastR1State(false), lastTriangleState(false), lastOptionsState(false) {
 }
 
 void PS4Manager::setLedBlinker(LedBlinker* blinker) {
@@ -29,6 +29,10 @@ void PS4Manager::setMotorController(MotorController* controller) {
 
 void PS4Manager::setAutoModeController(AutoModeController* controller) {
     autoModeController = controller;
+}
+
+void PS4Manager::setObstacleDetected(bool detected) {
+    obstacleDetected = detected;
 }
 
 void PS4Manager::begin(const char* macAddress) {
@@ -85,13 +89,11 @@ void PS4Manager::handleButtons() {
     if (PS4.Cross()) {
         digitalWrite(LED_PIN, HIGH);
         Serial.println("[X] Bouton Croix pressé - LED ON");
-        delay(100);
     }
 
     if (PS4.Circle()) {
         digitalWrite(LED_PIN, LOW);
         Serial.println("[O] Bouton Cercle pressé - LED OFF");
-        delay(100);
     }
 
     bool currentTriangleState = PS4.Triangle();
@@ -103,13 +105,7 @@ void PS4Manager::handleButtons() {
     lastTriangleState = currentTriangleState;
 
     if (PS4.Square()) {
-        for (int i = 0; i < 3; i++) {
-            digitalWrite(LED_PIN, HIGH);
-            delay(200);
-            digitalWrite(LED_PIN, LOW);
-            delay(200);
-        }
-        Serial.println("[□] Bouton Carré pressé - Clignotement lent");
+        Serial.println("[□] Bouton Carré pressé");
     }
     
     // Shoulder buttons
@@ -120,7 +116,6 @@ void PS4Manager::handleButtons() {
             ledBlinker->toggleLeftBlinker();
         }
         PS4.setRumble(50, 0);
-        delay(100);
         PS4.setRumble(0, 0);
     }
     lastL1State = currentL1State;
@@ -132,50 +127,49 @@ void PS4Manager::handleButtons() {
             ledBlinker->toggleRightBlinker();
         }
         PS4.setRumble(0, 100);
-        delay(100);
         PS4.setRumble(0, 0);
     }
     lastR1State = currentR1State;
     
     if (!isAutoActive) {
-        if (PS4.L2()) {
+        bool l2Pressed = PS4.L2();
+        bool r2Pressed = PS4.R2();
+        
+        if (l2Pressed) {
             int l2Value = PS4.L2Value(); // 0-255
-            Serial.print("[L2] Trigger gauche: ");
-            Serial.println(l2Value);
             
-            if (motorController != nullptr && motorController->isStoppedState()) {
-                int reverseSpeed = -l2Value; 
+            if (motorController != nullptr) {
+                int reverseSpeed = -l2Value;
                 motorController->setSpeed(reverseSpeed);
-                Serial.println("[MOTOR] Marche arrière");
-            }
-            else {
+                
                 if (ledController != nullptr) {
                     ledController->startBrakeLights();
                 }
-                
-                if (motorController != nullptr && l2Value > 50) {
-                    motorController->brake();
-                }
             }
         }
-        else {
-             if (ledController != nullptr) {
+        else if (r2Pressed) {
+            int throttleValue = PS4.R2Value(); // 0-255
+            
+            if (obstacleDetected && throttleValue > 0) {
+                Serial.println("[MOTOR] Accélération bloquée - Obstacle détecté !");
+                motorController->setSpeed(0);
+            } else {
+                if (motorController != nullptr) {
+                    motorController->setSpeed(throttleValue);
+                }
+            }
+            
+            if (ledController != nullptr) {
                 ledController->stopBrakeLights();
             }
         }
-        
-        if (PS4.R2()) {
-            int throttleValue = PS4.R2Value(); // 0-255
-            Serial.print("[R2] Trigger droit: ");
-            Serial.println(throttleValue);
-            
-            if (motorController != nullptr) {
-                motorController->setSpeed(throttleValue);
-            }
-        }
         else {
-            if (motorController != nullptr && !PS4.L2()) {
+            if (motorController != nullptr) {
                 motorController->setSpeed(0);
+            }
+            
+            if (ledController != nullptr) {
+                ledController->stopBrakeLights();
             }
         }
     }
@@ -183,7 +177,6 @@ void PS4Manager::handleButtons() {
     // Special buttons
     if (PS4.Share()) {
         Serial.println("[SHARE] Bouton Share pressé");
-        delay(200);
     }
 
     bool currentOptionsState = PS4.Options();
@@ -197,23 +190,19 @@ void PS4Manager::handleButtons() {
 
     if (PS4.PSButton()) {
         Serial.println("[PS] Bouton PS pressé");
-        delay(200);
     }
 
     if (PS4.Touchpad()) {
         Serial.println("[TOUCHPAD] Touchpad pressé");
-        delay(200);
     }
     
     // Joystick buttons
     if (PS4.L3()) {
         Serial.println("[L3] Joystick gauche cliqué");
-        delay(200);
     }
 
     if (PS4.R3()) {
         Serial.println("[R3] Joystick droit cliqué");
-        delay(200);
     }
 }
 
@@ -221,25 +210,21 @@ void PS4Manager::handleDPad() {
     if (PS4.Up()) {
         Serial.println("[↑] Haut pressé");
         PS4.setLed(255, 0, 0); // Red
-        delay(100);
     }
 
     if (PS4.Down()) {
         Serial.println("[↓] Bas pressé");
         PS4.setLed(0, 255, 0); // Green
-        delay(100);
     }
 
     if (PS4.Left()) {
         Serial.println("[←] Gauche pressé");
         PS4.setLed(0, 0, 255); // Blue
-        delay(100);
     }
 
     if (PS4.Right()) {
         Serial.println("[→] Droite pressé");
         PS4.setLed(255, 255, 0); // Yellow
-        delay(100);
     }
 }
 

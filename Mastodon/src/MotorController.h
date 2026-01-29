@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+class LedBlinker;
+
 class MotorController {
 private:
     int motorPin1;
@@ -11,6 +13,8 @@ private:
     bool isStopped;
     int currentSpeed;
     
+    LedBlinker* ledBlinker;
+    
 public:
     MotorController(int pin1, int pin2, int enable);
     void begin();
@@ -18,6 +22,7 @@ public:
     void emergencyStop();
     void brake();
     bool isStoppedState() const;
+    void setLedBlinker(LedBlinker* blinker);
 };
 
 #endif

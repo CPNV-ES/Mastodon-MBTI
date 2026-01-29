@@ -26,6 +26,8 @@ private:
     MotorController* motorController;
     AutoModeController* autoModeController;
     
+    bool obstacleDetected;
+    
     bool lastL1State;
     bool lastR1State;
     bool lastTriangleState;
@@ -45,6 +47,8 @@ public:
     void setMotorController(MotorController* controller);
     
     void setAutoModeController(AutoModeController* controller);
+    
+    void setObstacleDetected(bool detected);
     
     void update();
 

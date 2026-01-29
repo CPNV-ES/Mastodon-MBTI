@@ -34,12 +34,19 @@ void AutoModeController::update() {
     unsigned long currentTime = millis();
     unsigned long elapsedTime = currentTime - stateStartTime;
     
+    static unsigned long lastObstacleCheck = 0;
+    bool obstacleDetected = false;
+    if (currentTime - lastObstacleCheck > 100) {
+        obstacleDetected = ultrasonicController->isObstacleDetected(OBSTACLE_THRESHOLD);
+        lastObstacleCheck = currentTime;
+    }
+    
     switch (currentState) {
         case FORWARD:
             motorController->setSpeed(FORWARD_SPEED);
-            directionController->setDirectionFromJoystick(0); 
+            directionController->setDirectionFromJoystick(0);
             
-            if (ultrasonicController->isObstacleDetected(OBSTACLE_THRESHOLD)) {
+            if (obstacleDetected) {
                 Serial.println("[AUTO] Obstacle détecté ! Passage en REVERSING");
                 currentState = REVERSING;
                 stateStartTime = currentTime;
@@ -58,9 +65,9 @@ void AutoModeController::update() {
             break;
             
         case TURNING:
-            motorController->setSpeed(0);
+            motorController->setSpeed(FORWARD_SPEED);
             
-            directionController->setDirectionFromJoystick(127); 
+            directionController->setDirectionFromJoystick(127);
             
             if (elapsedTime >= TURN_DURATION) {
                 Serial.println("[AUTO] Fin virage, retour en FORWARD");

@@ -53,6 +53,7 @@ void setup() {
     ps4Manager.setLedController(&ledController);
     ps4Manager.setMotorController(&motorController);
     ps4Manager.setAutoModeController(&autoModeController);
+    motorController.setLedBlinker(&ledBlinker);
 
     Serial.println("[SETUP] Système initialisé avec succès!");
 }
@@ -62,9 +63,22 @@ void loop() {
     ledBlinker.update();
     autoModeController.update();
     
-    if (!autoModeController.isActive() && ultrasonicController.isObstacleDetected(20.0)) {
-        motorController.emergencyStop();
-        ledController.startBrakeLights();
+    static unsigned long lastUltrasonicCheck = 0;
+    static bool obstacleAhead = false;
+    
+    if (!autoModeController.isActive() && millis() - lastUltrasonicCheck > 200) {
+        obstacleAhead = ultrasonicController.isObstacleDetected(20.0);
+        
+        ps4Manager.setObstacleDetected(obstacleAhead);
+        
+        if (obstacleAhead) {
+            motorController.emergencyStop();
+            ledController.startBrakeLights();
+        } else {
+            ledController.stopBrakeLights();
+        }
+        
+        lastUltrasonicCheck = millis();
     }
     
     delay(10);
