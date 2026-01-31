@@ -1,12 +1,13 @@
 #include <Arduino.h>
-#include "PS4Manager.h"
-#include "LedBlinker.h"
-#include "DirectionController.h"
-#include "LedController.h"
-#include "UltrasonicController.h"
-#include "MotorController.h"
-#include "AutoModeController.h"
+#include "RemoteControl.h"
+#include "Blinkers.h"
+#include "Steering.h"
+#include "Lights.h"
+#include "Ultrasonic.h"
+#include "Motor.h"
+#include "AutoMode.h"
 
+// Pin definitions
 const int PS4_FEEDBACK_LED_PIN = 2;
 const int LEFT_BLINKER_PIN = 23;
 const int RIGHT_BLINKER_PIN = 21;
@@ -24,58 +25,61 @@ const int MOTOR_PIN1 = 12;
 const int MOTOR_PIN2 = 13;
 const int MOTOR_ENABLE_PIN = 15;
 
-const char* PS4_MAC_ADDRESS = "E0:8C:FE:2E:96:6A";
+// Configuration
+const char* PS4_MAC_ADDRESS = "E0:8C:FE:2E:96:6A"; // PS4 controller MAC address
+const float MANUAL_MODE_OBSTACLE_THRESHOLD = 20.0; // cm
+const unsigned long OBSTACLE_CHECK_INTERVAL = 200; // ms
 
-PS4Manager ps4Manager(PS4_FEEDBACK_LED_PIN, 16, 17);
-LedBlinker ledBlinker(LEFT_BLINKER_PIN, RIGHT_BLINKER_PIN, LEFT_BLINKER_PIN_2, RIGHT_BLINKER_PIN_2);
-DirectionController directionController(SERVO_PIN);
-LedController ledController(BRAKE_LIGHT_PIN, FIXED_LED_PIN, 
-                            RGB1_RED_PIN, RGB1_GREEN_PIN, RGB1_BLUE_PIN);
-UltrasonicController ultrasonicController(ULTRASONIC_TRIG_PIN, ULTRASONIC_ECHO_PIN);
-MotorController motorController(MOTOR_PIN1, MOTOR_PIN2, MOTOR_ENABLE_PIN);
-AutoModeController autoModeController(&motorController, &directionController, &ultrasonicController);
+// Component instances
+RemoteControl remoteControl(PS4_FEEDBACK_LED_PIN, 16, 17);
+Blinkers blinkers(LEFT_BLINKER_PIN, RIGHT_BLINKER_PIN, LEFT_BLINKER_PIN_2, RIGHT_BLINKER_PIN_2);
+Steering steering(SERVO_PIN);
+Lights lights(BRAKE_LIGHT_PIN, FIXED_LED_PIN, RGB1_RED_PIN, RGB1_GREEN_PIN, RGB1_BLUE_PIN);
+Ultrasonic ultrasonic(ULTRASONIC_TRIG_PIN, ULTRASONIC_ECHO_PIN);
+Motor motor(MOTOR_PIN1, MOTOR_PIN2, MOTOR_ENABLE_PIN);
+AutoMode autoMode(&motor, &steering, &ultrasonic);
 
 void setup() {
     Serial.begin(115200);
     delay(150);
 
-    ps4Manager.begin(PS4_MAC_ADDRESS);
+    remoteControl.begin(PS4_MAC_ADDRESS);
 
-    directionController.begin();
-    ledController.begin();
-    ledBlinker.begin();
-    ultrasonicController.begin();
-    motorController.begin();
-    autoModeController.begin();
+    steering.begin();
+    lights.begin();
+    blinkers.begin();
+    ultrasonic.begin();
+    motor.begin();
+    autoMode.begin();
 
-    ps4Manager.setDirectionController(&directionController);
-    ps4Manager.setLedBlinker(&ledBlinker);
-    ps4Manager.setLedController(&ledController);
-    ps4Manager.setMotorController(&motorController);
-    ps4Manager.setAutoModeController(&autoModeController);
-    motorController.setLedBlinker(&ledBlinker);
+    remoteControl.setSteering(&steering);
+    remoteControl.setBlinkers(&blinkers);
+    remoteControl.setLights(&lights);
+    remoteControl.setMotor(&motor);
+    remoteControl.setAutoMode(&autoMode);
+    motor.setBlinkers(&blinkers);
 
-    Serial.println("[SETUP] Système initialisé avec succès!");
+    Serial.println("[SETUP] System initialized successfully!");
 }
 
 void loop() {
-    ps4Manager.update();
-    ledBlinker.update();
-    autoModeController.update();
-    
+    remoteControl.update();
+    blinkers.update();
+    autoMode.update();
+
     static unsigned long lastUltrasonicCheck = 0;
     static bool obstacleAhead = false;
-    
-    if (!autoModeController.isActive() && millis() - lastUltrasonicCheck > 200) {
-        obstacleAhead = ultrasonicController.isObstacleDetected(20.0);
-        
-        ps4Manager.setObstacleDetected(obstacleAhead);
-        
+
+    if (!autoMode.isActive() && millis() - lastUltrasonicCheck > OBSTACLE_CHECK_INTERVAL) {
+        obstacleAhead = ultrasonic.isObstacleDetected(MANUAL_MODE_OBSTACLE_THRESHOLD);
+
+        remoteControl.setObstacleDetected(obstacleAhead);
+
         if (obstacleAhead) {
-            motorController.emergencyStop();
-            ledController.startBrakeLights();
+            motor.emergencyStop();
+            lights.startBrakeLights();
         } else {
-            ledController.stopBrakeLights();
+            lights.stopBrakeLights();
         }
         
         lastUltrasonicCheck = millis();

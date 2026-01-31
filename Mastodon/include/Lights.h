@@ -1,9 +1,9 @@
-#ifndef LEDCONTROLLER_H
-#define LEDCONTROLLER_H
+#ifndef LIGHTS_H
+#define LIGHTS_H
 
 #include <Arduino.h>
 
-class LedController {
+class Lights {
 private:
     int brakeLightPin;
     int fixedLedPin;
@@ -13,7 +13,7 @@ private:
     bool isBrakeOn;
 
 public:
-    LedController(int brakePin, int fixedPin, int r1, int g1, int b1);
+    Lights(int brakePin, int fixedPin, int r1, int g1, int b1);
     void begin();
     void startBrakeLights();
     void stopBrakeLights();
