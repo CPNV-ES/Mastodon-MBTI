@@ -26,7 +26,7 @@ Watch our project presentation:
 
 1. **Clone the repository**
 ```bash
-   git clone https://github.com/YOUR_USERNAME/mastodon-mbti.git
+   git clone <repository-url>
    cd mastodon-mbti
 ```
 
