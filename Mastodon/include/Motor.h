@@ -1,28 +1,28 @@
-#ifndef MOTORCONTROLLER_H
-#define MOTORCONTROLLER_H
+#ifndef MOTOR_H
+#define MOTOR_H
 
 #include <Arduino.h>
 
-class LedBlinker;
+class Blinkers;
 
-class MotorController {
+class Motor {
 private:
     int motorPin1;
     int motorPin2;
     int enablePin;
     bool isStopped;
     int currentSpeed;
-    
-    LedBlinker* ledBlinker;
-    
+
+    Blinkers* blinkers;
+
 public:
-    MotorController(int pin1, int pin2, int enable);
+    Motor(int pin1, int pin2, int enable);
     void begin();
     void setSpeed(int speed); // -255 to 255
     void emergencyStop();
     void brake();
     bool isStoppedState() const;
-    void setLedBlinker(LedBlinker* blinker);
+    void setBlinkers(Blinkers* blinker);
 };
 
 #endif

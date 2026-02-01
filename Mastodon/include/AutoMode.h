@@ -1,31 +1,31 @@
-#ifndef AUTOMODECONTROLLER_H
-#define AUTOMODECONTROLLER_H
+#ifndef AUTOMODE_H
+#define AUTOMODE_H
 
 #include <Arduino.h>
 
-class MotorController;
-class DirectionController;
-class UltrasonicController;
+class Motor;
+class Steering;
+class Ultrasonic;
 
-class AutoModeController {
+class AutoMode {
 private:
     enum State { FORWARD, REVERSING, TURNING, STOPPED };
     State currentState;
     bool isAutoModeActive;
     unsigned long stateStartTime;
-    
-    MotorController* motorController;
-    DirectionController* directionController;
-    UltrasonicController* ultrasonicController;
-    
+
+    Motor* motor;
+    Steering* steering;
+    Ultrasonic* ultrasonic;
+
     const float OBSTACLE_THRESHOLD = 20.0; // cm
     const int FORWARD_SPEED = 150;
     const int REVERSE_SPEED = -150;
     const unsigned long REVERSE_DURATION = 5000; // ms
     const unsigned long TURN_DURATION = 5000; // ms
-    
+
 public:
-    AutoModeController(MotorController* motor, DirectionController* direction, UltrasonicController* ultrasonic);
+    AutoMode(Motor* motorCtrl, Steering* steeringCtrl, Ultrasonic* ultrasonicCtrl);
     void begin();
     void toggle();
     void update();
